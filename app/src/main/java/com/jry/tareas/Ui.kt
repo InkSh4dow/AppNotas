@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextField
@@ -18,10 +20,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home() {
+    var showMenu by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
 
@@ -33,7 +43,7 @@ fun Home() {
                     .padding(horizontal = 8.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /* TODO: Acción del menú */ }) {
+                IconButton(onClick = { showMenu = true }) {
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menú",
@@ -91,6 +101,17 @@ fun Home() {
                 contentAlignment = Alignment.Center
             ) {
                 Text("Barra Inferior", color = Color.White)
+            }
+        }
+
+        if (showMenu) {
+            ModalBottomSheet(
+                onDismissRequest = { showMenu = false },
+                sheetState = sheetState
+            ) {
+                UiMenu(
+                    onClose = { showMenu = false }
+                )
             }
         }
     }
