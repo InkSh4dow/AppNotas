@@ -7,9 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,14 +44,18 @@ fun Home() {
         darkColorScheme(
             primary = Color(0xFF228B22),
             onPrimary = Color.White,
+            secondary = Color(0xFF228B22),
+            onSecondary = Color.White,
             surface = Color(0xFF181A20),
             onSurface = Color.White,
             background = Color(0xFF121212)
         )
     } else {
         lightColorScheme(
-            primary = Color(0xFFF5F5F5),
+            primary = Color(0xFF66BB6A),  //Color(0xFFF5F5F5)
             onPrimary = Color.Black,
+            secondary = Color(0xFF66BB6A),
+            onSecondary = Color.White,
             surface = Color.White,
             onSurface = Color.Black,
             background = Color(0xFFF2F2F2)
@@ -56,10 +63,12 @@ fun Home() {
     }
 
     MaterialTheme(colorScheme = colorScheme) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)) {
             Column(modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)) {
+                .systemBarsPadding()) {
 
                 // Barra arriba (FALTA EL BOTON DE BUSQUEDA)
                 Box(
@@ -73,7 +82,7 @@ fun Home() {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 12.dp),
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = { showMenu = true }) {
@@ -93,12 +102,18 @@ fun Home() {
                             style = androidx.compose.material3.MaterialTheme.typography.titleMedium
                         )
 
-                        IconButton(onClick = { /* TODO: Acción de búsqueda */ }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondary)
+                        ) {
+                            IconButton(onClick = { /* TODO: Acción de búsqueda */ }) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Buscar",
+                                    tint = MaterialTheme.colorScheme.onSecondary
+                                )
+                            }
                         }
                     }
                 }
@@ -108,7 +123,7 @@ fun Home() {
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(8f) // 80%
+                        .weight(1f) // 80%
                         .background(MaterialTheme.colorScheme.background),
                     contentPadding = PaddingValues(8.dp)
                 ) {
@@ -136,11 +151,41 @@ fun Home() {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                        .background(MaterialTheme.colorScheme.surface),
-                    contentAlignment = Alignment.Center
+                        .padding(horizontal = 12.dp, vertical = 12.dp)
+                        .shadow(8.dp, RoundedCornerShape(24.dp))
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Text("Barra Inferior", color = MaterialTheme.colorScheme.onSurface)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { /* TODO: Acción de filtro */ }) {
+                            Icon(
+                                imageVector = Icons.Default.FilterAlt,
+                                contentDescription = "Filtros",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Spacer(Modifier.weight(1f))
+
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondary)
+                        ) {
+                            IconButton(onClick = { /* TODO: Acción de agregar */ }) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Agregar",
+                                    tint = MaterialTheme.colorScheme.onSecondary
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

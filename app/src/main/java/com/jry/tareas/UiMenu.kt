@@ -1,7 +1,7 @@
 package com.jry.tareas
 
+import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
@@ -21,7 +21,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
+import androidx.core.net.toUri
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun MenuUI(
     onClose: () -> Unit,
@@ -80,8 +82,8 @@ fun MenuUI(
 
             BotonGithubAnimado(
                 onClick = {
-                    val url = "https://www.ejemplo.com"
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    val url = "https://github.com/InkSh4dow"
+                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                     context.startActivity(intent)
                 },
                 modifier = Modifier
