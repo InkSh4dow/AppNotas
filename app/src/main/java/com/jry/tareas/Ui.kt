@@ -39,7 +39,7 @@ fun Home() {
 
     val colorScheme = if (darkMode) {
         darkColorScheme(
-            primary = Color(0xFF23272F),
+            primary = Color(0xFF228B22),
             onPrimary = Color.White,
             surface = Color(0xFF181A20),
             onSurface = Color.White,
@@ -57,9 +57,11 @@ fun Home() {
 
     MaterialTheme(colorScheme = colorScheme) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)) {
 
-                // Barra arriba (EN DESARROLLO)
+                // Barra arriba (FALTA EL BOTON DE BUSQUEDA)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -114,9 +116,12 @@ fun Home() {
                         Box(
                             modifier = Modifier
                                 .padding(8.dp)
+                                .shadow(4.dp, RoundedCornerShape(16.dp))
+                                .clip(RoundedCornerShape(16.dp))
                                 .background(MaterialTheme.colorScheme.surface)
                                 .fillMaxWidth()
                                 .height(80.dp),
+
                             contentAlignment = Alignment.Center
                         ) {
                             Text(

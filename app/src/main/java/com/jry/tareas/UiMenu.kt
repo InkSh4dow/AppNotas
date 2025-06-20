@@ -58,7 +58,9 @@ fun MenuUI(
             Text(
                 text = "Menú",
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .align(Alignment.CenterHorizontally)
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
