@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -23,14 +24,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
+    import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +45,13 @@ fun Home() {
     var showMenu by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var darkMode by remember { mutableStateOf(false) }
+
+    var isSearchActive by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val settingsDataStore = remember { Datos(context) }
+    val darkMode by settingsDataStore.darkMode.collectAsStateWithLifecycle(initialValue = false)
 
     val colorScheme = if (darkMode) {
         darkColorScheme(
@@ -79,46 +92,88 @@ fun Home() {
                         .clip(RoundedCornerShape(24.dp))
                         .background(MaterialTheme.colorScheme.surface)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menú",
-                                tint = MaterialTheme.colorScheme.onSurface
+                    if (isSearchActive) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(onClick = {
+                                isSearchActive = false
+                                searchQuery = ""
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.ArrowBack,
+                                    contentDescription = "Cerrar búsqueda",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            TextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                modifier = Modifier.weight(1f),
+                                placeholder = { Text("Buscar tareas...") },
+                                singleLine = true,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    disabledContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                )
                             )
                         }
-
-                        Text(
-                            text = "Tasks",
-                            color = MaterialTheme.colorScheme.onSurface,
+                    } else {
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 8.dp),
-                            style = androidx.compose.material3.MaterialTheme.typography.titleMedium
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary)
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            IconButton(onClick = { /* TODO: Acción de búsqueda */ }) {
+                            IconButton(onClick = { showMenu = true }) {
                                 Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Buscar",
-                                    tint = MaterialTheme.colorScheme.onSecondary
+                                    imageVector = Icons.Default.Menu,
+                                    contentDescription = "Menú",
+                                    tint = MaterialTheme.colorScheme.onSurface
                                 )
+                            }
+
+                            Text(
+                                text = "Tasks",
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 8.dp),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.secondary)
+                            ) {
+                                IconButton(onClick = { isSearchActive = true }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Buscar",
+                                        tint = MaterialTheme.colorScheme.onSecondary
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
                 // Lista de tareas (BASE SIN DESARROLLO)
+                val allTasks = remember { List(50) { index -> "Ítem $index" } }
+                val filteredTasks = remember(searchQuery, allTasks) {
+                    if (searchQuery.isBlank()) {
+                        allTasks
+                    } else {
+                        allTasks.filter { it.contains(searchQuery, ignoreCase = true) }
+                    }
+                }
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier
@@ -127,7 +182,8 @@ fun Home() {
                         .background(MaterialTheme.colorScheme.background),
                     contentPadding = PaddingValues(8.dp)
                 ) {
-                    items(50) { index ->
+                    items(filteredTasks.size, key = { filteredTasks[it] }) { index ->
+                        val task = filteredTasks[index]
                         Box(
                             modifier = Modifier
                                 .padding(8.dp)
@@ -140,7 +196,7 @@ fun Home() {
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "Ítem $index",
+                                text = task,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -197,7 +253,11 @@ fun Home() {
                     MenuUI(
                         onClose = { showMenu = false },
                         darkMode = darkMode,
-                        onDarkModeChange = { darkMode = it }
+                        onDarkModeChange = { newMode ->
+                            scope.launch {
+                                settingsDataStore.saveDarkMode(newMode)
+                            }
+                        }
                     )
                 }
             }
