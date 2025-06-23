@@ -24,11 +24,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.ModalBottomSheet
-    import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.draw.clip
+import androidx.navigation.NavController
 import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
@@ -41,7 +42,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home() {
+fun Home(navController: NavController) {
     var showMenu by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
@@ -53,29 +54,6 @@ fun Home() {
     val settingsDataStore = remember { Datos(context) }
     val darkMode by settingsDataStore.darkMode.collectAsStateWithLifecycle(initialValue = false)
 
-    val colorScheme = if (darkMode) {
-        darkColorScheme(
-            primary = Color(0xFF228B22),
-            onPrimary = Color.White,
-            secondary = Color(0xFF228B22),
-            onSecondary = Color.White,
-            surface = Color(0xFF181A20),
-            onSurface = Color.White,
-            background = Color(0xFF121212)
-        )
-    } else {
-        lightColorScheme(
-            primary = Color(0xFF66BB6A),  //Color(0xFFF5F5F5)
-            onPrimary = Color.Black,
-            secondary = Color(0xFF66BB6A),
-            onSecondary = Color.White,
-            surface = Color.White,
-            onSurface = Color.Black,
-            background = Color(0xFFF2F2F2)
-        )
-    }
-
-    MaterialTheme(colorScheme = colorScheme) {
         Box(modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)) {
@@ -233,7 +211,7 @@ fun Home() {
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.secondary)
                         ) {
-                            IconButton(onClick = { /* TODO: Acción de agregar */ }) {
+                            IconButton(onClick = { navController.navigate("addTask") }) {
                                 Icon(
                                     imageVector = Icons.Default.Add,
                                     contentDescription = "Agregar",
@@ -263,4 +241,3 @@ fun Home() {
             }
         }
     }
-}
