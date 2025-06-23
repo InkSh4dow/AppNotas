@@ -54,167 +54,87 @@ fun Home(navController: NavController) {
     val settingsDataStore = remember { Datos(context) }
     val darkMode by settingsDataStore.darkMode.collectAsStateWithLifecycle(initialValue = false)
 
-        Box(modifier = Modifier
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(MaterialTheme.colorScheme.background)) {
+        Column(modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)) {
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()) {
+            .systemBarsPadding()) {
 
-                // Barra arriba (FALTA EL BOTON DE BUSQUEDA)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 12.dp)
-                        .shadow(8.dp, RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
-                    if (isSearchActive) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(onClick = {
-                                isSearchActive = false
-                                searchQuery = ""
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.ArrowBack,
-                                    contentDescription = "Cerrar búsqueda",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            TextField(
-                                value = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                modifier = Modifier.weight(1f),
-                                placeholder = { Text("Buscar tareas...") },
-                                singleLine = true,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    disabledContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                )
-                            )
-                        }
-                    } else {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(onClick = { showMenu = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menú",
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-
-                            Text(
-                                text = "Tasks",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 8.dp),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.secondary)
-                            ) {
-                                IconButton(onClick = { isSearchActive = true }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = "Buscar",
-                                        tint = MaterialTheme.colorScheme.onSecondary
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Lista de tareas (BASE SIN DESARROLLO)
-                val allTasks = remember { List(50) { index -> "Ítem $index" } }
-                val filteredTasks = remember(searchQuery, allTasks) {
-                    if (searchQuery.isBlank()) {
-                        allTasks
-                    } else {
-                        allTasks.filter { it.contains(searchQuery, ignoreCase = true) }
-                    }
-                }
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f) // 80%
-                        .background(MaterialTheme.colorScheme.background),
-                    contentPadding = PaddingValues(8.dp)
-                ) {
-                    items(filteredTasks.size, key = { filteredTasks[it] }) { index ->
-                        val task = filteredTasks[index]
-                        Box(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .shadow(4.dp, RoundedCornerShape(16.dp))
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .fillMaxWidth()
-                                .height(80.dp),
-
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = task,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                // Barra abajo (BASE SIN DESARROLLO)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 12.dp)
-                        .shadow(8.dp, RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
+            // Barra arriba (FALTA EL BOTON DE BUSQUEDA)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
+                    .shadow(8.dp, RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                if (isSearchActive) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(onClick = { /* TODO: Acción de filtro */ }) {
+                        IconButton(onClick = {
+                            isSearchActive = false
+                            searchQuery = ""
+                        }) {
                             Icon(
-                                imageVector = Icons.Default.FilterAlt,
-                                contentDescription = "Filtros",
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Cerrar búsqueda",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Buscar tareas...") },
+                            singleLine = true,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                disabledContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            )
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { showMenu = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menú",
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
-                        Spacer(Modifier.weight(1f))
+                        Text(
+                            text = "Tasks",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp),
+                            style = MaterialTheme.typography.titleMedium
+                        )
 
                         Box(
                             modifier = Modifier
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.secondary)
                         ) {
-                            IconButton(onClick = { navController.navigate("addTask") }) {
+                            IconButton(onClick = { isSearchActive = true }) {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Agregar",
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Buscar",
                                     tint = MaterialTheme.colorScheme.onSecondary
                                 )
                             }
@@ -223,21 +143,101 @@ fun Home(navController: NavController) {
                 }
             }
 
-            if (showMenu) {
-                ModalBottomSheet(
-                    onDismissRequest = { showMenu = false },
-                    sheetState = sheetState
+            // Lista de tareas (BASE SIN DESARROLLO)
+            val allTasks = remember { List(50) { index -> "Ítem $index" } }
+            val filteredTasks = remember(searchQuery, allTasks) {
+                if (searchQuery.isBlank()) {
+                    allTasks
+                } else {
+                    allTasks.filter { it.contains(searchQuery, ignoreCase = true) }
+                }
+            }
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f) // 80%
+                    .background(MaterialTheme.colorScheme.background),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                items(filteredTasks.size, key = { filteredTasks[it] }) { index ->
+                    val task = filteredTasks[index]
+                    Box(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .shadow(4.dp, RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .fillMaxWidth()
+                            .height(80.dp),
+
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = task,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            // Barra abajo (BASE SIN DESARROLLO)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
+                    .shadow(8.dp, RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    MenuUI(
-                        onClose = { showMenu = false },
-                        darkMode = darkMode,
-                        onDarkModeChange = { newMode ->
-                            scope.launch {
-                                settingsDataStore.saveDarkMode(newMode)
-                            }
+                    IconButton(onClick = { /* TODO: Acción de filtro */ }) {
+                        Icon(
+                            imageVector = Icons.Default.FilterAlt,
+                            contentDescription = "Filtros",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondary)
+                    ) {
+                        IconButton(onClick = { navController.navigate("addTask") }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Agregar",
+                                tint = MaterialTheme.colorScheme.onSecondary
+                            )
                         }
-                    )
+                    }
                 }
             }
         }
+
+        if (showMenu) {
+            ModalBottomSheet(
+                onDismissRequest = { showMenu = false },
+                sheetState = sheetState
+            ) {
+                MenuUI(
+                    onClose = { showMenu = false },
+                    darkMode = darkMode,
+                    onDarkModeChange = { newMode ->
+                        scope.launch {
+                            settingsDataStore.saveDarkMode(newMode)
+                        }
+                    }
+                )
+            }
+        }
     }
+}

@@ -9,13 +9,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(navController: NavController) {
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+    val database = TaskDatabase.getDatabase(context)
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -32,9 +37,14 @@ fun AddTaskScreen(navController: NavController) {
                 },
                 actions = {
                     TextButton(onClick = {
-                        // TODO: Aquí irá la lógica para guardar la tarea en una base de datos.
-                        // Por ahora, solo cerramos la pantalla.
-                        navController.popBackStack()
+                        if (title.isNotBlank()) {
+                            scope.launch {
+                                database.taskDao().insertTask(
+                                    Task(title = title, description = description)
+                                )
+                                navController.popBackStack()
+                            }
+                        }
                     }) {
                         Text("Guardar", color = MaterialTheme.colorScheme.primary)
                     }
