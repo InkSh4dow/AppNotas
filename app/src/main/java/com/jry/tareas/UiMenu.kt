@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -27,7 +26,6 @@ import androidx.core.net.toUri
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun MenuUI(
-    onClose: () -> Unit,
     darkMode: Boolean,
     onDarkModeChange: (Boolean) -> Unit
 ) {
@@ -91,33 +89,6 @@ fun MenuUI(
         }
     }
 }
-
-
-@Composable
-fun darkButtonColors(
-    isEqualsButton: Boolean = false,
-    isOperation: Boolean = false
-): ButtonColors = ButtonDefaults.buttonColors(
-    containerColor = when {
-        isEqualsButton -> Color(0xFFFFA500)
-        isOperation -> Color(0xFF03A9F4)
-        else -> Color(0xFF424242)
-    },
-    contentColor = Color.White
-)
-
-@Composable
-fun lightButtonColors(
-    isEqualsButton: Boolean = false,
-    isOperation: Boolean = false
-): ButtonColors = ButtonDefaults.buttonColors(
-    containerColor = when {
-        isEqualsButton -> Color(0xFFFFA500)
-        isOperation -> Color(0xFF03A9F4)
-        else -> Color.White
-    },
-    contentColor = Color.Black
-)
 
 @Composable
 private fun BotonGithubAnimado(
