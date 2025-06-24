@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +54,9 @@ fun Home(navController: NavController) {
     val context = LocalContext.current
     val settingsDataStore = remember { Datos(context) }
     val darkMode by settingsDataStore.darkMode.collectAsStateWithLifecycle(initialValue = false)
+
+    val database = remember { TaskDatabase.getDatabase(context) }
+    val allTasks by database.taskDao().getAllTasks().collectAsStateWithLifecycle(initialValue = emptyList())
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -143,13 +147,12 @@ fun Home(navController: NavController) {
                 }
             }
 
-            // Lista de tareas (BASE SIN DESARROLLO)
-            val allTasks = remember { List(50) { index -> "Ítem $index" } }
+            // Lista de tareas
             val filteredTasks = remember(searchQuery, allTasks) {
                 if (searchQuery.isBlank()) {
                     allTasks
                 } else {
-                    allTasks.filter { it.contains(searchQuery, ignoreCase = true) }
+                    allTasks.filter { it.title.contains(searchQuery, ignoreCase = true) }
                 }
             }
             LazyVerticalGrid(
@@ -160,8 +163,7 @@ fun Home(navController: NavController) {
                     .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(8.dp)
             ) {
-                items(filteredTasks.size, key = { filteredTasks[it] }) { index ->
-                    val task = filteredTasks[index]
+                items(filteredTasks, key = { it.id }) { task ->
                     Box(
                         modifier = Modifier
                             .padding(8.dp)
@@ -169,12 +171,13 @@ fun Home(navController: NavController) {
                             .clip(RoundedCornerShape(16.dp))
                             .background(MaterialTheme.colorScheme.surface)
                             .fillMaxWidth()
-                            .height(80.dp),
+                            .height(80.dp)
+                            .clickable { navController.navigate("taskDetail/${task.id}") },
 
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = task,
+                            text = task.title,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }

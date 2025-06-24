@@ -12,9 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +64,15 @@ fun AppNavigation() {
             }
             composable("addTask") {
                 AddTaskScreen(navController = navController)
+            }
+            composable(
+                "taskDetail/{taskId}",
+                arguments = listOf(navArgument("taskId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val taskId = backStackEntry.arguments?.getInt("taskId")
+                taskId?.let {
+                    TaskDetailScreen(navController = navController, taskId = it)
+                }
             }
         }
     }
