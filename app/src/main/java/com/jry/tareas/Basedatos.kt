@@ -3,6 +3,7 @@ package com.jry.tareas
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Room
@@ -19,6 +20,9 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTaskById(taskId: Int): Flow<Task>
+
+    @Delete
+    suspend fun deleteTask(task: Task)
 }
 
 @Database(entities = [Task::class], version = 1)
