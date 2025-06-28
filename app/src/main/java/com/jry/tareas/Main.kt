@@ -56,7 +56,7 @@ fun AppNavigation() {
         )
     }
 
-    MaterialTheme(colorScheme = colorScheme) {
+    MaterialTheme(colorScheme = colorScheme, typography = TipografiaApp) {
         val navController = rememberNavController()
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
