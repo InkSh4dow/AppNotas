@@ -8,8 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
@@ -19,7 +19,7 @@ fun AddTaskScreen(navController: NavController) {
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
-    val database = TaskDatabase.getDatabase(context)
+    val db = TaskDatabase.getDatabase(context)
     val scope = rememberCoroutineScope()
 
     Scaffold(
@@ -27,23 +27,19 @@ fun AddTaskScreen(navController: NavController) {
             TopAppBar(
                 title = { Text("Nueva Tarea") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton({ navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Atrás",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 actions = {
-                    TextButton(onClick = {
-                        if (title.isNotBlank()) {
-                            scope.launch {
-                                database.taskDao().insertTask(
-                                    Task(title = title, description = description)
-                                )
-                                navController.popBackStack()
-                            }
+                    TextButton({
+                        if (title.isNotBlank()) scope.launch {
+                            db.taskDao().insertTask(Task(title = title, description = description))
+                            navController.popBackStack()
                         }
                     }) {
                         Text("Guardar", color = MaterialTheme.colorScheme.primary)
@@ -55,11 +51,11 @@ fun AddTaskScreen(navController: NavController) {
             )
         },
         containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    ) { padding ->
         Column(
-            modifier = Modifier
+            Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
