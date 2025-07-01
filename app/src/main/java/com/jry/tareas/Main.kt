@@ -3,8 +3,15 @@ package com.jry.tareas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,6 +58,8 @@ fun AppNavGraph(navController: NavHostController) {
         composable("home") { Home(navController) }
         composable("addTask") { AddTaskScreen(navController) }
         composable("search") { SearchScreen(navController) }
+        composable("addImage") { PlaceholderScreen("Añadir Imagen", navController) }
+        composable("addTable") { PlaceholderScreen("Añadir Tabla", navController) }
         composable(
             route = "taskDetail/{taskId}",
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
@@ -58,6 +67,35 @@ fun AppNavGraph(navController: NavHostController) {
             backStackEntry.arguments?.getInt("taskId")?.let { taskId ->
                 TaskDetailScreen(navController, taskId)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlaceholderScreen(title: String, navController: NavHostController) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(title) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Pantalla para '$title'")
         }
     }
 }

@@ -28,8 +28,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.*
@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.regex.Pattern
 
 private const val ANIMATION_DURATION_MS = 100
 
@@ -67,10 +68,21 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
     var taskBackgroundColor by remember { mutableStateOf(Color.Transparent) }
+    var isInEditMode by remember { mutableStateOf(false) }
+
+    var editableTitle by remember { mutableStateOf("") }
+    var editableDescription by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         delay(10)
         isExpanded = true
+    }
+
+    LaunchedEffect(task) {
+        task?.let {
+            editableTitle = it.title
+            editableDescription = it.description
+        }
     }
 
 
@@ -146,17 +158,36 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                             CircularProgressIndicator(color = contentColor)
                         }
                         else -> {
-                            Text(
-                                text = taskValue.title,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = contentColor
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = taskValue.description,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = contentColor
-                            )
+                            if (isInEditMode) {
+                                OutlinedTextField(
+                                    value = editableTitle,
+                                    onValueChange = { editableTitle = it },
+                                    label = { Text("Título") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = editableDescription,
+                                    onValueChange = { editableDescription = it },
+                                    label = { Text("Descripción") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            } else {
+                                Text(
+                                    text = taskValue.title,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = contentColor
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                if (taskValue.description.isNotBlank()) {
+                                    Text(
+                                        text = taskValue.description,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = contentColor
+                                    )
+                                }
+
+                            }
                         }
                     }
 
@@ -234,14 +265,28 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 8.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceAround
                         ) {
                             IconButton(onClick = {
-                                navController.navigate("editTask/$taskId")
+                                if (isInEditMode) {
+                                    scope.launch {
+                                        task?.let {
+                                            val updatedTask = it.copy(
+                                                title = editableTitle,
+                                                description = editableDescription
+                                            )
+                                            database.taskDao().updateTask(updatedTask)
+                                        }
+                                        isInEditMode = false
+                                    }
+                                } else {
+                                    isInEditMode = true
+                                }
                             }) {
                                 Icon(
-                                    imageVector = Icons.Default.Edit,
-                                    contentDescription = "Editar",
+                                    imageVector = if (isInEditMode) Icons.Default.Done else Icons.Default.Edit,
+                                    contentDescription = if (isInEditMode) "Guardar" else "Editar",
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
@@ -264,22 +309,6 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                                     contentDescription = "Cambiar fondo",
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
-                            }
-
-                            Spacer(Modifier.weight(1f))
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.secondary)
-                            ) {
-                                IconButton(onClick = { /* Botón agregar sin función */ }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Agregar",
-                                        tint = MaterialTheme.colorScheme.onSecondary
-                                    )
-                                }
                             }
                         }
                     }

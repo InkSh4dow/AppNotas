@@ -11,5 +11,5 @@ class Datos(context: Context) {
     private val ds = context.dataStore
     companion object { val DARK = booleanPreferencesKey("dark_mode") }
     val darkMode = ds.data.map { it[DARK] == true }
-    suspend fun saveDarkMode(d: Boolean) { ds.edit { it[DARK] = d } }
+    suspend fun guardarModoOscuro(d: Boolean) { ds.edit { it[DARK] = d } }
 }

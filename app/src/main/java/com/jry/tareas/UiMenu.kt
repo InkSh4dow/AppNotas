@@ -26,8 +26,8 @@ import androidx.core.net.toUri
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun MenuUI(
-    darkMode: Boolean,
-    onDarkModeChange: (Boolean) -> Unit
+    modoOscuro: Boolean,
+    onModoOscuroChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
@@ -72,8 +72,8 @@ fun MenuUI(
                 Text("Modo oscuro")
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
-                    checked = darkMode,
-                    onCheckedChange = onDarkModeChange
+                    checked = modoOscuro,
+                    onCheckedChange = onModoOscuroChange
                 )
             }
 

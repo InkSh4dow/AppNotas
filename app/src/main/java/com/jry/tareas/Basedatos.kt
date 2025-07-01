@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
     @Insert suspend fun insertTask(task: Task)
+    @Update suspend fun updateTask(task: Task)
     @Query("SELECT * FROM tasks") fun getAllTasks(): Flow<List<Task>>
     @Query("SELECT * FROM tasks WHERE id = :taskId") fun getTaskById(taskId: Int): Flow<Task>
     @Delete suspend fun deleteTask(task: Task)
