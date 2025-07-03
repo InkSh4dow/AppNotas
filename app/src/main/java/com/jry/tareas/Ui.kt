@@ -90,29 +90,53 @@ fun Home(navController: NavController) {
             }
 
             // Lista de tareas
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(tareas, key = { it.id }) { tarea ->
-                    Box(
-                        modifier = Modifier
-                            .shadow(2.dp, RoundedCornerShape(16.dp))
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .clickable { navController.navigate("taskDetail/${tarea.id}") }
-                            .padding(16.dp)
+            if (tareas.isEmpty()) {
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxSize()
                     ) {
+                        LottieAnimacion(assetName = "vacio.lottie", size = 250.dp)
+                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = tarea.title,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis
+                            "Aún no hay tareas",
+                            style = MaterialTheme.typography.titleLarge
                         )
+                        Text(
+                            "¡Añade una para empezar!",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(tareas, key = { it.id }) { tarea ->
+                        Box(
+                            modifier = Modifier
+                                .shadow(2.dp, RoundedCornerShape(16.dp))
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .clickable { navController.navigate("taskDetail/${tarea.id}") }
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = tarea.title,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }

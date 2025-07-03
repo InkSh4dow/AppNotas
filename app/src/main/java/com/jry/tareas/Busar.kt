@@ -62,14 +62,21 @@ fun SearchScreen(navController: NavController) {
     ) { padding ->
         if (q.isNotBlank() && filtered.isEmpty()) {
             Box(
-                Modifier.fillMaxSize().padding(padding),
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No se encontraron resultados.")
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    LottieAnimacion(assetName = "vacio.lottie", size = 200.dp)
+                    Text("No se encontraron resultados.")
+                }
             }
         } else {
             LazyColumn(
-                Modifier.fillMaxSize().padding(padding),
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
