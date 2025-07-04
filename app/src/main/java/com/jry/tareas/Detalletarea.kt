@@ -70,6 +70,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
         }
     }
     var isInEditMode by remember { mutableStateOf(false) }
+    var isTitleError by remember { mutableStateOf(false) }
 
     var editableTitle by remember { mutableStateOf("") }
     var editableDescription by remember { mutableStateOf("") }
@@ -112,11 +113,11 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = taskBackgroundColor ?: MaterialTheme.colorScheme.surface
+                    containerColor = if (isInEditMode) MaterialTheme.colorScheme.surface else taskBackgroundColor ?: MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = taskBackgroundColor ?: MaterialTheme.colorScheme.background
+        containerColor = if (isInEditMode) MaterialTheme.colorScheme.background else taskBackgroundColor ?: MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -130,21 +131,49 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                 }
                 else -> {
                     if (isInEditMode) {
-                        OutlinedTextField(
+                        TextField(
                             value = editableTitle,
-                            onValueChange = { editableTitle = it },
+                            onValueChange = {
+                                editableTitle = it
+                                if (isTitleError) isTitleError = false
+                            },
                             label = { Text("Título") },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                            shape = RoundedCornerShape(16.dp),
+                            isError = isTitleError,
+                            supportingText = {
+                                if (isTitleError) {
+                                    Text("El título no puede estar vacío", color = MaterialTheme.colorScheme.error)
+                                }
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                errorIndicatorColor = Color.Transparent
+                            )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
+                        TextField(
                             value = editableDescription,
                             onValueChange = { editableDescription = it },
                             label = { Text("Descripción") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
-                            shape = RoundedCornerShape(16.dp)
+                            leadingIcon = { Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null) },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            )
                         )
                     } else {
                         if (taskValue.description.isNotBlank()) {
@@ -226,8 +255,8 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                 }
             }
 
-            val bottomBarBackgroundColor = if (taskBackgroundColor != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
-            val bottomBarContentColor = if (taskBackgroundColor != null) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
+            val bottomBarBackgroundColor = MaterialTheme.colorScheme.surface
+            val bottomBarContentColor = MaterialTheme.colorScheme.onSurface
 
             Box(
                 modifier = Modifier
@@ -250,15 +279,19 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                         text = if (isInEditMode) "Guardar" else "Editar",
                         onClick = {
                             if (isInEditMode) {
-                                scope.launch {
-                                    task?.let {
-                                        val updatedTask = it.copy(
-                                            title = editableTitle,
-                                            description = editableDescription
-                                        )
-                                        database.taskDao().updateTask(updatedTask)
+                                if (editableTitle.isBlank()) {
+                                    isTitleError = true
+                                } else {
+                                    scope.launch {
+                                        task?.let {
+                                            val updatedTask = it.copy(
+                                                title = editableTitle,
+                                                description = editableDescription
+                                            )
+                                            database.taskDao().updateTask(updatedTask)
+                                        }
+                                        isInEditMode = false
                                     }
-                                    isInEditMode = false
                                 }
                             } else {
                                 isInEditMode = true
