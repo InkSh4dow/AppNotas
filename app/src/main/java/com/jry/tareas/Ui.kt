@@ -23,6 +23,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
+enum class SortOrder {
+    DEFAULT,
+    ASCENDING,
+    DESCENDING
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(navController: NavController) {
@@ -36,6 +42,17 @@ fun Home(navController: NavController) {
 
     val datos = remember { Datos(contexto) }
     val modoOscuro by datos.darkMode.collectAsState(initial = false)
+
+    var orden by remember { mutableStateOf(SortOrder.DEFAULT) }
+    val tareasOrdenadas by remember(tareas, orden) {
+        derivedStateOf {
+            when (orden) {
+                SortOrder.ASCENDING -> tareas.sortedBy { it.title }
+                SortOrder.DESCENDING -> tareas.sortedByDescending { it.title }
+                SortOrder.DEFAULT -> tareas
+            }
+        }
+    }
 
     Scaffold { paddingValues ->
         Column(
@@ -53,8 +70,8 @@ fun Home(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp))
+                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(MaterialTheme.colorScheme.surface)
                 )
                 Row(
@@ -121,7 +138,7 @@ fun Home(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(tareas, key = { it.id }) { tarea ->
+                    items(tareasOrdenadas, key = { it.id }) { tarea ->
                         Box(
                             modifier = Modifier
                                 .shadow(2.dp, RoundedCornerShape(16.dp))
@@ -150,8 +167,8 @@ fun Home(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp))
+                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(MaterialTheme.colorScheme.surface)
                 )
                 Row(
@@ -161,49 +178,95 @@ fun Home(navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = { /* TODO: Lógica de filtros */ }) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filtros",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+                    var filtroMenuExpandido by remember { mutableStateOf(false) }
+
+                    Box {
+                        IconButton(onClick = { filtroMenuExpandido = true }) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = "Filtros",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        MaterialTheme(
+                            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
+                        ) {
+                            DropdownMenu(
+                                expanded = filtroMenuExpandido,
+                                onDismissRequest = { filtroMenuExpandido = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Por creación") },
+                                    onClick = {
+                                        orden = SortOrder.DEFAULT
+                                        filtroMenuExpandido = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Alfabéticamente (A-Z)") },
+                                    onClick = {
+                                        orden = SortOrder.ASCENDING
+                                        filtroMenuExpandido = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Alfabéticamente (Z-A)") },
+                                    onClick = {
+                                        orden = SortOrder.DESCENDING
+                                        filtroMenuExpandido = false
+                                    }
+                                )
+                            }
+                        }
                     }
 
                     var menuAgregarExpandido by remember { mutableStateOf(false) }
 
                     Box {
-                        IconButton(onClick = { menuAgregarExpandido = true }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "Agregar",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = menuAgregarExpandido,
-                            onDismissRequest = { menuAgregarExpandido = false }
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondary),
+                            contentAlignment = Alignment.Center
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("Nota") },
-                                onClick = {
-                                    navController.navigate("addTask")
-                                    menuAgregarExpandido = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Imagen") },
-                                onClick = {
-                                    navController.navigate("addImage")
-                                    menuAgregarExpandido = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Tabla") },
-                                onClick = {
-                                    navController.navigate("addTable")
-                                    menuAgregarExpandido = false
-                                }
-                            )
+                            IconButton(onClick = { menuAgregarExpandido = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Agregar",
+                                    tint = MaterialTheme.colorScheme.onSecondary
+                                )
+                            }
+                        }
+                        MaterialTheme(
+                            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
+                        ) {
+                            DropdownMenu(
+                                expanded = menuAgregarExpandido,
+                                onDismissRequest = { menuAgregarExpandido = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Nota") },
+                                    onClick = {
+                                        navController.navigate("addTask")
+                                        menuAgregarExpandido = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Imagen") },
+                                    onClick = {
+                                        navController.navigate("addImage")
+                                        menuAgregarExpandido = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Tabla") },
+                                    onClick = {
+                                        navController.navigate("addTable")
+                                        menuAgregarExpandido = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }

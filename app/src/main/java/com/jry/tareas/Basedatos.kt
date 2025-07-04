@@ -13,9 +13,17 @@ interface TaskDao {
     @Delete suspend fun deleteTask(task: Task)
 }
 
-@Database(entities = [Task::class], version = 1)
+@Database(
+    entities = [Task::class],
+    version = 2,
+    exportSchema = false,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
+)
 abstract class TaskDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
+
     companion object {
         @Volatile private var INSTANCE: TaskDatabase? = null
         fun getDatabase(context: Context) = INSTANCE ?: synchronized(this) {

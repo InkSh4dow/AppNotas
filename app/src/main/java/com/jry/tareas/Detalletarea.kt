@@ -1,6 +1,7 @@
 package com.jry.tareas
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,16 +14,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,14 +39,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import androidx.core.graphics.toColorInt
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("ConfigurationScreenWidthHeight")
+@SuppressLint("ConfigurationScreenWidthHeight", "UseKtx")
 @Composable
 fun TaskDetailScreen(navController: NavController, taskId: Int) {
     val context = LocalContext.current
@@ -53,16 +59,27 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
-    var taskBackgroundColor by remember { mutableStateOf<Color?>(null) }
+    val taskBackgroundColor = remember(task) {
+        task?.colorHex?.let {
+            try {
+                Color(it.toColorInt())
+            } catch (e: IllegalArgumentException) {
+                Log.e("TaskDetailScreen", "Error al parsear el color hexadecimal: $it", e)
+                null
+            }
+        }
+    }
     var isInEditMode by remember { mutableStateOf(false) }
 
     var editableTitle by remember { mutableStateOf("") }
     var editableDescription by remember { mutableStateOf("") }
 
-    LaunchedEffect(task) {
-        task?.let {
-            editableTitle = it.title
-            editableDescription = it.description
+    LaunchedEffect(task, isInEditMode) {
+        if (!isInEditMode) {
+            task?.let {
+                editableTitle = it.title
+                editableDescription = it.description
+            }
         }
     }
 
@@ -71,10 +88,19 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
             TopAppBar(
                 title = {
                     task?.let {
-                        Text(
-                            text = it.title,
-                            maxLines = 1
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Notes,
+                                contentDescription = "Icono de nota",
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = it.title,
+                                maxLines = 1,
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
@@ -117,13 +143,16 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                             label = { Text("Descripción") },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f)
+                                .weight(1f),
+                            shape = RoundedCornerShape(16.dp)
                         )
                     } else {
                         if (taskValue.description.isNotBlank()) {
                             Text(
                                 text = taskValue.description,
-                                style = MaterialTheme.typography.bodyLarge
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    lineHeight = 24.sp
+                                )
                             )
                         }
                         Spacer(modifier = Modifier.weight(1f))
@@ -149,7 +178,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                         Spacer(modifier = Modifier.height(12.dp))
 
                         val colors = listOf(
-                            null, // Representa el color por defecto
+                            null,
                             Color(0xFF4CAF50),
                             Color(0xFF2196F3),
                             Color(0xFFFF9800),
@@ -170,7 +199,15 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                                             color ?: MaterialTheme.colorScheme.outline
                                         )
                                         .clickable {
-                                            taskBackgroundColor = color
+                                            scope.launch {
+                                                task?.let { currentTask ->
+                                                    val newHex = color?.let { c ->
+                                                        String.format("#%08X", c.toArgb())
+                                                    }
+                                                    val updatedTask = currentTask.copy(colorHex = newHex)
+                                                    database.taskDao().updateTask(updatedTask)
+                                                }
+                                            }
                                             showColorPicker = false
                                         },
                                     contentAlignment = Alignment.Center
@@ -189,63 +226,60 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                 }
             }
 
+            val bottomBarBackgroundColor = if (taskBackgroundColor != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+            val bottomBarContentColor = if (taskBackgroundColor != null) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp)
-                    .shadow(8.dp, RoundedCornerShape(24.dp))
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.CenterEnd
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(0.75f)
+                        .shadow(8.dp, RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(bottomBarBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    IconButton(onClick = {
-                        if (isInEditMode) {
-                            scope.launch {
-                                task?.let {
-                                    val updatedTask = it.copy(
-                                        title = editableTitle,
-                                        description = editableDescription
-                                    )
-                                    database.taskDao().updateTask(updatedTask)
+                    ActionButton(
+                        icon = if (isInEditMode) Icons.Default.Done else Icons.Default.Edit,
+                        text = if (isInEditMode) "Guardar" else "Editar",
+                        onClick = {
+                            if (isInEditMode) {
+                                scope.launch {
+                                    task?.let {
+                                        val updatedTask = it.copy(
+                                            title = editableTitle,
+                                            description = editableDescription
+                                        )
+                                        database.taskDao().updateTask(updatedTask)
+                                    }
+                                    isInEditMode = false
                                 }
-                                isInEditMode = false
+                            } else {
+                                isInEditMode = true
                             }
-                        } else {
-                            isInEditMode = true
-                        }
-                    }) {
-                        Icon(
-                            imageVector = if (isInEditMode) Icons.Default.Done else Icons.Default.Edit,
-                            contentDescription = if (isInEditMode) "Guardar" else "Editar",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                        },
+                        iconTint = bottomBarContentColor
+                    )
 
-                    IconButton(onClick = {
-                        showDeleteDialog = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Borrar",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    ActionButton(
+                        icon = Icons.Default.Circle,
+                        text = "Color",
+                        onClick = { showColorPicker = !showColorPicker },
+                        iconTint = taskBackgroundColor ?: bottomBarContentColor
+                    )
 
-                    IconButton(onClick = {
-                        showColorPicker = !showColorPicker
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Palette,
-                            contentDescription = "Cambiar fondo",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    ActionButton(
+                        icon = Icons.Default.Delete,
+                        text = "Borrar",
+                        onClick = { showDeleteDialog = true },
+                        iconTint = bottomBarContentColor
+                    )
                 }
             }
         }
@@ -276,6 +310,31 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                     Text("Cancelar")
                 }
             }
+        )
+    }
+}
+
+@Composable
+private fun ActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    onClick: () -> Unit,
+    iconTint: Color
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            tint = iconTint
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
+            color = iconTint
         )
     }
 }
