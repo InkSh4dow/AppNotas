@@ -3,122 +3,122 @@ package com.jry.tareas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Notes
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTaskScreen(navController: NavController) {
-    var title by rememberSaveable { mutableStateOf("") }
-    var description by rememberSaveable { mutableStateOf("") }
-    var isTitleError by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-    val db = TaskDatabase.getDatabase(context)
+fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
+    var title by remember { mutableStateOf(TextFieldValue()) }
+    var description by remember { mutableStateOf(TextFieldValue()) }
+    var showError by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
-    fun validateAndSave() {
-        if (title.isBlank()) {
-            isTitleError = true
-        } else {
-            scope.launch {
-                db.taskDao().insertTask(Task(title = title, description = description))
-                navController.popBackStack()
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nueva Tarea", style = MaterialTheme.typography.titleLarge) },
-                navigationIcon = {
-                    IconButton({ navController.popBackStack() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Atrás",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                title = {
+                    Text(
+                        "Nueva Tarea",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
                 },
                 actions = {
                     Button(
-                        onClick = { validateAndSave() },
-                        shape = RoundedCornerShape(16.dp)
+                        onClick = {
+                            if (title.text.isBlank()) {
+                                showError = true
+                            } else {
+                                scope.launch {
+                                    val task = Task(
+                                        title = title.text,
+                                        description = description.text
+                                    )
+                                    taskDao.insert(task)
+                                    navController.popBackStack()
+                                }
+                            }
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        Icon(Icons.Default.Done, contentDescription = "Guardar")
-                        Spacer(Modifier.width(4.dp))
-                        Text("Guardar")
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = "Guardar",
+                            modifier = Modifier.size(ButtonDefaults.IconSize)
+                        )
+                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                        Text("Guardar", style = MaterialTheme.typography.bodyLarge)
                     }
-                    Spacer(Modifier.width(8.dp))
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { padding ->
+        }
+    ) { paddingValues ->
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TextField(
+            // Campo de título
+            OutlinedTextField(
                 value = title,
                 onValueChange = {
                     title = it
-                    if (isTitleError) isTitleError = false
+                    showError = false
                 },
-                label = { Text("Título") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
-                shape = RoundedCornerShape(16.dp),
-                isError = isTitleError,
-                supportingText = {
-                    if (isTitleError) {
-                        Text("El título no puede estar vacío", color = MaterialTheme.colorScheme.error)
-                    }
+                label = { Text("Título", style = MaterialTheme.typography.bodyLarge) },
+                placeholder = { Text("Escribe el título de tu tarea...", style = MaterialTheme.typography.bodyLarge) },
+                leadingIcon = {
+                    Icon(Icons.Default.Create, contentDescription = "Título")
                 },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    errorIndicatorColor = Color.Transparent
-                )
-            )
-            TextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Descripción") },
-                placeholder = { Text("Escribe aquí tu tarea...") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                leadingIcon = { Icon(Icons.AutoMirrored.Filled.Notes, contentDescription = null) },
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp)),
                 shape = RoundedCornerShape(16.dp),
-                colors = TextFieldDefaults.colors(
+                isError = showError,
+                supportingText = if (showError) {
+                    { Text("El título es obligatorio", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) }
+                } else null,
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    disabledContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+
+            // Campo de descripción
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Descripción", style = MaterialTheme.typography.bodyLarge) },
+                placeholder = { Text("Añade una descripción...", style = MaterialTheme.typography.bodyLarge) },
+                leadingIcon = {
+                    Icon(Icons.Default.Description, contentDescription = "Descripción")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp)),
+                shape = RoundedCornerShape(16.dp),
+                maxLines = 5,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 )
             )
         }

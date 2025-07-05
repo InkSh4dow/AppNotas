@@ -23,11 +23,9 @@ import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchScreen(navController: NavController) {
+fun SearchScreen(navController: NavController, taskDao: TaskDao) {
     var q by rememberSaveable { mutableStateOf("") }
-    val ctx = LocalContext.current
-    val tasks by remember { TaskDatabase.getDatabase(ctx).taskDao().getAllTasks() }
-        .collectAsStateWithLifecycle(emptyList())
+    val tasks by taskDao.getAllTasks().collectAsStateWithLifecycle(emptyList())
     val filtered = if (q.isBlank()) emptyList() else tasks.filter {
         it.title.contains(q, true) || it.description.contains(q, true)
     }
@@ -55,7 +53,7 @@ fun SearchScreen(navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp)),
-                    placeholder = { Text("Buscar nota...") },
+                    placeholder = { Text("Buscar nota...", style = MaterialTheme.typography.bodyLarge) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
                     trailingIcon = {
                         if (q.isNotEmpty()) {
@@ -83,7 +81,7 @@ fun SearchScreen(navController: NavController) {
                             .padding(horizontal = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("🧐 Sin resultados para '$q'")
+                        Text("Sin resultados para '$q'", style = MaterialTheme.typography.bodyLarge)
                     }
                 } else if (q.isNotBlank()) {
                     LazyColumn(
@@ -106,7 +104,7 @@ fun SearchScreen(navController: NavController) {
                                 Column(Modifier.padding(24.dp)) {
                                     Text(
                                         task.title,
-                                        style = MaterialTheme.typography.titleLarge,
+                                        style = MaterialTheme.typography.titleMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Spacer(Modifier.height(8.dp))

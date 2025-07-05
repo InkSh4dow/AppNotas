@@ -4,20 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -27,59 +14,46 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import androidx.core.graphics.toColorInt
 
+@SuppressLint("UseKtx")
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("ConfigurationScreenWidthHeight", "UseKtx")
 @Composable
-fun TaskDetailScreen(navController: NavController, taskId: Int) {
-    val context = LocalContext.current
-    val database = remember { TaskDatabase.getDatabase(context) }
-    val task by database.taskDao().getTaskById(taskId).collectAsStateWithLifecycle(initialValue = null)
+fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao) {
+    var isEditing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val task by taskDao.getTaskById(taskId).collectAsState(initial = null)
 
-    var showDeleteDialog by remember { mutableStateOf(false) }
-    var showColorPicker by remember { mutableStateOf(false) }
-    val taskBackgroundColor = remember(task) {
+    var editTitle by remember { mutableStateOf(TextFieldValue()) }
+    var editDescription by remember { mutableStateOf(TextFieldValue()) }
+    var showError by remember { mutableStateOf(false) }
+
+    val taskBackgroundColor = remember(task?.colorHex) {
         task?.colorHex?.let {
             try {
-                Color(it.toColorInt())
+                Color(android.graphics.Color.parseColor(it))
             } catch (e: IllegalArgumentException) {
-                Log.e("TaskDetailScreen", "Error al parsear el color hexadecimal: $it", e)
+                Log.e("TaskDetailScreen", "Error parsing color: $it", e)
                 null
             }
         }
     }
-    var isInEditMode by remember { mutableStateOf(false) }
-    var isTitleError by remember { mutableStateOf(false) }
 
-    var editableTitle by remember { mutableStateOf("") }
-    var editableDescription by remember { mutableStateOf("") }
-
-    LaunchedEffect(task, isInEditMode) {
-        if (!isInEditMode) {
+    LaunchedEffect(task, isEditing) {
+        if (!isEditing) {
             task?.let {
-                editableTitle = it.title
-                editableDescription = it.description
+                editTitle = TextFieldValue(it.title)
+                editDescription = TextFieldValue(it.description)
             }
         }
     }
@@ -113,11 +87,11 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = if (isInEditMode) MaterialTheme.colorScheme.surface else taskBackgroundColor ?: MaterialTheme.colorScheme.surface
+                    containerColor = if (isEditing) MaterialTheme.colorScheme.surface else taskBackgroundColor ?: MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = if (isInEditMode) MaterialTheme.colorScheme.background else taskBackgroundColor ?: MaterialTheme.colorScheme.background
+        containerColor = if (isEditing) MaterialTheme.colorScheme.background else taskBackgroundColor ?: MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -130,22 +104,22 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                     CircularProgressIndicator()
                 }
                 else -> {
-                    if (isInEditMode) {
+                    if (isEditing) {
                         TextField(
-                            value = editableTitle,
+                            value = editTitle,
                             onValueChange = {
-                                editableTitle = it
-                                if (isTitleError) isTitleError = false
+                                editTitle = it
+                                if (showError) showError = false
                             },
-                            label = { Text("Título") },
+                            label = { Text("Título", style = MaterialTheme.typography.bodyLarge) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
                             shape = RoundedCornerShape(16.dp),
-                            isError = isTitleError,
+                            isError = showError,
                             supportingText = {
-                                if (isTitleError) {
-                                    Text("El título no puede estar vacío", color = MaterialTheme.colorScheme.error)
+                                if (showError) {
+                                    Text("El título no puede estar vacío", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                                 }
                             },
                             colors = TextFieldDefaults.colors(
@@ -159,9 +133,9 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         TextField(
-                            value = editableDescription,
-                            onValueChange = { editableDescription = it },
-                            label = { Text("Descripción") },
+                            value = editDescription,
+                            onValueChange = { editDescription = it },
+                            label = { Text("Descripción", style = MaterialTheme.typography.bodyLarge) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
@@ -189,72 +163,6 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                 }
             }
 
-            if (showColorPicker) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Seleccionar color de fondo",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        val colors = listOf(
-                            null,
-                            Color(0xFF4CAF50),
-                            Color(0xFF2196F3),
-                            Color(0xFFFF9800),
-                            Color(0xFF9C27B0),
-                            Color(0xFFF44336),
-                            Color(0xFF607D8B)
-                        )
-
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(colors) { color ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            color ?: MaterialTheme.colorScheme.outline
-                                        )
-                                        .clickable {
-                                            scope.launch {
-                                                task?.let { currentTask ->
-                                                    val newHex = color?.let { c ->
-                                                        String.format("#%08X", c.toArgb())
-                                                    }
-                                                    val updatedTask = currentTask.copy(colorHex = newHex)
-                                                    database.taskDao().updateTask(updatedTask)
-                                                }
-                                            }
-                                            showColorPicker = false
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (color == null) {
-                                        Text(
-                                            text = "×",
-                                            color = MaterialTheme.colorScheme.onSurface,
-                                            style = MaterialTheme.typography.titleLarge
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             val bottomBarBackgroundColor = MaterialTheme.colorScheme.surface
             val bottomBarContentColor = MaterialTheme.colorScheme.onSurface
 
@@ -275,26 +183,26 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     ActionButton(
-                        icon = if (isInEditMode) Icons.Default.Done else Icons.Default.Edit,
-                        text = if (isInEditMode) "Guardar" else "Editar",
+                        icon = if (isEditing) Icons.Default.Done else Icons.Default.Edit,
+                        text = if (isEditing) "Guardar" else "Editar",
                         onClick = {
-                            if (isInEditMode) {
-                                if (editableTitle.isBlank()) {
-                                    isTitleError = true
+                            if (isEditing) {
+                                if (editTitle.text.isBlank()) {
+                                    showError = true
                                 } else {
                                     scope.launch {
                                         task?.let {
                                             val updatedTask = it.copy(
-                                                title = editableTitle,
-                                                description = editableDescription
+                                                title = editTitle.text,
+                                                description = editDescription.text
                                             )
-                                            database.taskDao().updateTask(updatedTask)
+                                            taskDao.updateTask(updatedTask)
                                         }
-                                        isInEditMode = false
+                                        isEditing = false
                                     }
                                 }
                             } else {
-                                isInEditMode = true
+                                isEditing = true
                             }
                         },
                         iconTint = bottomBarContentColor
@@ -303,47 +211,19 @@ fun TaskDetailScreen(navController: NavController, taskId: Int) {
                     ActionButton(
                         icon = Icons.Default.Circle,
                         text = "Color",
-                        onClick = { showColorPicker = !showColorPicker },
+                        onClick = { /* Accion de color */ },
                         iconTint = taskBackgroundColor ?: bottomBarContentColor
                     )
 
                     ActionButton(
                         icon = Icons.Default.Delete,
                         text = "Borrar",
-                        onClick = { showDeleteDialog = true },
+                        onClick = { /* Accion de borrar */ },
                         iconTint = bottomBarContentColor
                     )
                 }
             }
         }
-    }
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar tarea") },
-            text = { Text("¿Estás seguro de que quieres eliminar esta tarea? Esta acción no se puede deshacer.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        scope.launch {
-                            task?.let { taskToDelete ->
-                                database.taskDao().deleteTask(taskToDelete)
-                                showDeleteDialog = false
-                                navController.popBackStack()
-                            }
-                        }
-                    }
-                ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
     }
 }
 

@@ -1,22 +1,19 @@
 package com.jry.tareas
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -29,19 +26,18 @@ enum class SortOrder {
     DESCENDING
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun Home(navController: NavController) {
+fun Home(navController: NavController, taskDao: TaskDao) {
     val contexto = LocalContext.current
-    val database = remember { TaskDatabase.getDatabase(contexto) }
-    val taskDao = database.taskDao()
     val tareas by taskDao.getAllTasks().collectAsState(initial = emptyList())
-
-    val estadoModal = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
 
     val datos = remember { Datos(contexto) }
     val modoOscuro by datos.darkMode.collectAsState(initial = false)
+
+    val scope = rememberCoroutineScope()
+    val estadoModal = rememberModalBottomSheetState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var orden by remember { mutableStateOf(SortOrder.DEFAULT) }
     val tareasOrdenadas by remember(tareas, orden) {
@@ -54,139 +50,24 @@ fun Home(navController: NavController) {
         }
     }
 
-    Scaffold { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            // Barra superior
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Mis Notas", style = MaterialTheme.typography.titleLarge) },
+                navigationIcon = {
                     IconButton(onClick = { scope.launch { estadoModal.show() } }) {
-                        Icon(
-                            imageVector = Icons.Default.Menu,
-                            contentDescription = "Menú",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+                        Icon(Icons.Default.Menu, "Menú")
                     }
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        IconButton(onClick = { navController.navigate("search") }) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = MaterialTheme.colorScheme.onSecondary
-                            )
-                        }
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate("search") }) {
+                        Icon(Icons.Default.Search, "Buscar")
                     }
-                }
-            }
-
-            // Lista de tareas
-            if (tareas.isEmpty()) {
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        LottieAnimacion(assetName = "vacio.lottie", size = 250.dp)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "Aún no hay tareas",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        Text(
-                            "¡Añade una para empezar!",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(tareasOrdenadas, key = { it.id }) { tarea ->
-                        Box(
-                            modifier = Modifier
-                                .shadow(2.dp, RoundedCornerShape(16.dp))
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(MaterialTheme.colorScheme.surface)
-                                .clickable { navController.navigate("taskDetail/${tarea.id}") }
-                                .padding(16.dp)
-                        ) {
-                            Text(
-                                text = tarea.title,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Barra inferior
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surface)
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
                     var filtroMenuExpandido by remember { mutableStateOf(false) }
-
                     Box {
                         IconButton(onClick = { filtroMenuExpandido = true }) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "Filtros",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
+                            Icon(Icons.Default.FilterList, "Filtros")
                         }
                         MaterialTheme(
                             shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
@@ -196,21 +77,21 @@ fun Home(navController: NavController) {
                                 onDismissRequest = { filtroMenuExpandido = false }
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Por creación") },
+                                    text = { Text("Por creación", style = MaterialTheme.typography.bodyLarge) },
                                     onClick = {
                                         orden = SortOrder.DEFAULT
                                         filtroMenuExpandido = false
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Alfabéticamente (A-Z)") },
+                                    text = { Text("Alfabéticamente (A-Z)", style = MaterialTheme.typography.bodyLarge) },
                                     onClick = {
                                         orden = SortOrder.ASCENDING
                                         filtroMenuExpandido = false
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Alfabéticamente (Z-A)") },
+                                    text = { Text("Alfabéticamente (Z-A)", style = MaterialTheme.typography.bodyLarge) },
                                     onClick = {
                                         orden = SortOrder.DESCENDING
                                         filtroMenuExpandido = false
@@ -219,52 +100,93 @@ fun Home(navController: NavController) {
                             }
                         }
                     }
-
-                    var menuAgregarExpandido by remember { mutableStateOf(false) }
-
-                    Box {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            IconButton(onClick = { menuAgregarExpandido = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Agregar",
-                                    tint = MaterialTheme.colorScheme.onSecondary
-                                )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { navController.navigate("addTask") },
+                icon = { Icon(Icons.Default.Add, "Nueva nota") },
+                text = { Text("Nueva nota", style = MaterialTheme.typography.bodyLarge) },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 4.dp)
+            )
+        }
+    ) { paddingValues ->
+        if (tareas.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LottieAnimacion(assetName = "vacio.lottie", size = 250.dp)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        "Aún no hay tareas",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        "¡Añade una para empezar!",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                contentPadding = paddingValues,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(tareasOrdenadas, key = { it.id }) { tarea ->
+                    val cardColor = remember(tarea.colorHex) {
+                        if (tarea.colorHex != null) {
+                            try {
+                                Color(android.graphics.Color.parseColor(tarea.colorHex))
+                            } catch (e: Exception) {
+                                null // Devolver null para usar el color por defecto
                             }
+                        } else {
+                            null
                         }
-                        MaterialTheme(
-                            shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
-                        ) {
-                            DropdownMenu(
-                                expanded = menuAgregarExpandido,
-                                onDismissRequest = { menuAgregarExpandido = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Nota") },
-                                    onClick = {
-                                        navController.navigate("addTask")
-                                        menuAgregarExpandido = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Imagen") },
-                                    onClick = {
-                                        navController.navigate("addImage")
-                                        menuAgregarExpandido = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Tabla") },
-                                    onClick = {
-                                        navController.navigate("addTable")
-                                        menuAgregarExpandido = false
-                                    }
+                    }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { navController.navigate("taskDetail/${tarea.id}") },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = cardColor ?: MaterialTheme.colorScheme.secondaryContainer
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = tarea.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (tarea.description.isNotBlank()) {
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = tarea.description,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 5,
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
                             }
                         }
@@ -275,11 +197,7 @@ fun Home(navController: NavController) {
 
         if (estadoModal.isVisible) {
             ModalBottomSheet(
-                onDismissRequest = {
-                    scope.launch {
-                        estadoModal.hide()
-                    }
-                },
+                onDismissRequest = { scope.launch { estadoModal.hide() } },
                 sheetState = estadoModal
             ) {
                 MenuUI(
@@ -288,6 +206,12 @@ fun Home(navController: NavController) {
                         scope.launch {
                             datos.guardarModoOscuro(nuevoValor)
                         }
+                    },
+                    snackbarHostState = snackbarHostState,
+                    scope = scope,
+                    onNavigateToAbout = {
+                        scope.launch { estadoModal.hide() }
+                        navController.navigate("about")
                     }
                 )
             }
