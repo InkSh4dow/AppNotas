@@ -37,6 +37,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
     var editTitle by remember { mutableStateOf(TextFieldValue()) }
     var editDescription by remember { mutableStateOf(TextFieldValue()) }
     var showError by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     val taskBackgroundColor = remember(task?.colorHex) {
         task?.colorHex?.let {
@@ -47,6 +48,34 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                 null
             }
         }
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirmar eliminación") },
+            text = { Text("¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        scope.launch {
+                            task?.let {
+                                taskDao.deleteTask(it)
+                                navController.popBackStack()
+                            }
+                        }
+                    }
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 
     LaunchedEffect(task, isEditing) {
@@ -218,7 +247,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                     ActionButton(
                         icon = Icons.Default.Delete,
                         text = "Borrar",
-                        onClick = { /* Accion de borrar */ },
+                        onClick = { showDeleteDialog = true },
                         iconTint = bottomBarContentColor
                     )
                 }
