@@ -16,7 +16,7 @@ private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
 class Datos(private val context: Context) {
     val darkMode: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
-            preferences[DARK_MODE_KEY] ?: false
+            preferences[DARK_MODE_KEY] == true
         }
 
     suspend fun guardarModoOscuro(isDarkMode: Boolean) {
