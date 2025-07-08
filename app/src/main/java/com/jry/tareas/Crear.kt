@@ -51,7 +51,8 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
                         },
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
+                             containerColor = MaterialTheme.colorScheme.secondary,
+                            contentColor = MaterialTheme.colorScheme.onSecondary
                         )
                     ) {
                         Icon(

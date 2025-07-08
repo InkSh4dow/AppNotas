@@ -28,8 +28,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF228B22), onPrimary = Color.White, secondary = Color(0xFF228B22),
-    onSecondary = Color.White, surface = Color(0xFF181A20), onSurface = Color.White, background = Color(0xFF121212)
+    primary = Color(0xFF424242),
+    onPrimary = Color.White,
+    secondary = Color(0xFF66BB6A),
+    onSecondary = Color.Black,
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color.White,
+    background = Color(0xFF121212),
+    onBackground = Color.White
 )
 
 private val LightColorScheme = lightColorScheme(
