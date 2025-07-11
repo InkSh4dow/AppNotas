@@ -54,7 +54,7 @@ fun AboutScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Tus datos se guardan localmente en tu dispositivo. No se recopila información personal.",
+                "Tus datos se guardan localmente en tu dispositivo. No se recopila información",
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(32.dp))
