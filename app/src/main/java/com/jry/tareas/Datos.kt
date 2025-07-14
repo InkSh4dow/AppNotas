@@ -23,16 +23,9 @@ class Datos(private val context: Context) {
     val darkMode: Flow<Boolean> = context.dataStore.data
         .map { preferences ->
 
-            preferences[DARK_MODE_KEY] ?: false
+            preferences[DARK_MODE_KEY] == true
         }
 
-    /**
-     * Guarda el estado del modo oscuro en DataStore.
-     *
-     * Esta es una función `suspend` y debe ser llamada desde una corrutina.
-     *
-     * @param isDarkMode El nuevo estado del modo oscuro a guardar.
-     */
     suspend fun guardarModoOscuro(isDarkMode: Boolean) {
         context.dataStore.edit { settings ->
             settings[DARK_MODE_KEY] = isDarkMode

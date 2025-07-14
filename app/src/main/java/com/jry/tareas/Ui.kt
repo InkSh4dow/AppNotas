@@ -20,11 +20,22 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
+//Funcion para ordenar las notas
+
 enum class SortOrder {
+    // Orden por defecto (generalmente por fecha de creación)
     DEFAULT,
+    // Orden alfabético ascendente (A-Z)
     ASCENDING,
+    // Orden alfabético descendente (Z-A)
     DESCENDING
 }
+
+/**
+Composable que representa la pantalla principal de la aplicación
+Muestra una lista de notas o tareas en una cuadrícula. Permite al usuario
+añadir nuevas notas, buscarlas, ordenarlas y acceder al menú de la aplicación
+*/
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -207,8 +218,6 @@ fun Home(navController: NavController, taskDao: TaskDao) {
                             datos.guardarModoOscuro(nuevoValor)
                         }
                     },
-                    snackbarHostState = snackbarHostState,
-                    scope = scope,
                     onNavigateToAbout = {
                         scope.launch { estadoModal.hide() }
                         navController.navigate("about")

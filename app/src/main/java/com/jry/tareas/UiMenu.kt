@@ -12,20 +12,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
+
+/**
+Composable que define la interfaz de usuario del menú
+Muestra opciones como cambiar al modo oscuro y navegar a la pantalla "Sobre la app".
+*/
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun MenuUI(
     modoOscuro: Boolean,
     onModoOscuroChange: (Boolean) -> Unit,
-    snackbarHostState: SnackbarHostState,
-    scope: CoroutineScope,
     onNavigateToAbout: () -> Unit
 ) {
-    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val menuHeight = screenHeight * 0.75f
