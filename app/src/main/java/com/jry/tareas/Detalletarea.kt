@@ -1,6 +1,5 @@
 package com.jry.tareas
 
-import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,36 +19,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import androidx.core.graphics.toColorInt
 
-@SuppressLint("UseKtx")
+/**
+ Este archivo muestra los detalles de una nota específica.
+ Esta pantalla permite ver, editar y eliminar una tarea. El usuario puede alternar
+ entre un modo de visualización y un modo de edición.
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao) {
+    // Estado para controlar si la UI está en modo de edición.
     var isEditing by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val task by taskDao.getTaskById(taskId).collectAsState(initial = null)
 
-    var editTitle by remember { mutableStateOf(TextFieldValue()) }
-    var editDescription by remember { mutableStateOf(TextFieldValue()) }
+    // Estados para los campos de texto en el modo de edición.
+    var editTitle by remember { mutableStateOf("") }
+    var editDescription by remember { mutableStateOf("") }
+    
     var showError by remember { mutableStateOf(false) }
+    // Estado para controlar la visibilidad del diálogo de eliminación
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    // Fondo de la nota
     val taskBackgroundColor = remember(task?.colorHex) {
         task?.colorHex?.let {
             try {
-                Color(android.graphics.Color.parseColor(it))
+                Color(it.toColorInt())
             } catch (e: IllegalArgumentException) {
-                Log.e("TaskDetailScreen", "Error parsing color: $it", e)
-                null
+                Log.e("TaskDetailScreen", "Error al parsear el color: $it", e)
+                null // Devuelve null si el color es inválido.
             }
         }
     }
 
+    // Muestra el diálogo de confirmación para eliminar la nota
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -78,11 +88,13 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
         )
     }
 
+    // Efecto que se ejecuta cuando la tarea cambia o cuando se sale del modo de edición
+    // Sincroniza los campos de edición con los datos actuales de la tarea
     LaunchedEffect(task, isEditing) {
         if (!isEditing) {
             task?.let {
-                editTitle = TextFieldValue(it.title)
-                editDescription = TextFieldValue(it.description)
+                editTitle = it.title
+                editDescription = it.description
             }
         }
     }
@@ -116,10 +128,12 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
+                    // Cambia el color de la barra superior según el modo y el color de la nota
                     containerColor = if (isEditing) MaterialTheme.colorScheme.surface else taskBackgroundColor ?: MaterialTheme.colorScheme.surface
                 )
             )
         },
+        // Cambia el color de fondo de la pantalla
         containerColor = if (isEditing) MaterialTheme.colorScheme.background else taskBackgroundColor ?: MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
@@ -128,12 +142,15 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
+            // Muestra un indicador de carga mientras se obtiene la nota
             when (val taskValue = task) {
                 null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
                 else -> {
+                    // Muestra los campos de edición o el texto de visualización
                     if (isEditing) {
+                        // Campo de texto para editar el título
                         TextField(
                             value = editTitle,
                             onValueChange = {
@@ -161,6 +178,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                             )
                         )
                         Spacer(modifier = Modifier.height(8.dp))
+                        // Campo de texto para editar la descripción
                         TextField(
                             value = editDescription,
                             onValueChange = { editDescription = it },
@@ -179,6 +197,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                             )
                         )
                     } else {
+                        // Muestra la descripción de la tarea en modo de solo lectura
                         if (taskValue.description.isNotBlank()) {
                             Text(
                                 text = taskValue.description,
@@ -195,6 +214,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
             val bottomBarBackgroundColor = MaterialTheme.colorScheme.surface
             val bottomBarContentColor = MaterialTheme.colorScheme.onSurface
 
+            // Barra de acciones inferior
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -211,19 +231,20 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
+                    // Botón para Editar/Guardar
                     ActionButton(
                         icon = if (isEditing) Icons.Default.Done else Icons.Default.Edit,
                         text = if (isEditing) "Guardar" else "Editar",
                         onClick = {
                             if (isEditing) {
-                                if (editTitle.text.isBlank()) {
+                                if (editTitle.isBlank()) {
                                     showError = true
                                 } else {
                                     scope.launch {
                                         task?.let {
                                             val updatedTask = it.copy(
-                                                title = editTitle.text,
-                                                description = editDescription.text
+                                                title = editTitle,
+                                                description = editDescription
                                             )
                                             taskDao.updateTask(updatedTask)
                                         }
@@ -231,19 +252,22 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                                     }
                                 }
                             } else {
+                                // Entra en modo de edición
                                 isEditing = true
                             }
                         },
                         iconTint = bottomBarContentColor
                     )
 
+                    // Botón para cambiar el color 
                     ActionButton(
                         icon = Icons.Default.Circle,
                         text = "Color",
-                        onClick = { /* Accion de color */ },
+                        onClick = { /**/ },
                         iconTint = taskBackgroundColor ?: bottomBarContentColor
                     )
 
+                    // Botón para borrar la tarea
                     ActionButton(
                         icon = Icons.Default.Delete,
                         text = "Borrar",
@@ -256,6 +280,9 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
     }
 }
 
+/**
+ Un Composable privado para los botones de acción en la barra inferior.
+  */
 @Composable
 private fun ActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,

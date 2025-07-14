@@ -7,6 +7,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+// Este archivo define la familia de fuentes personalizada en toda la ui
 
 val Rubik = FontFamily(Font(R.font.rubik, FontWeight.Normal))
 

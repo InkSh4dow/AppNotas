@@ -27,6 +27,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 
+// Esquema de colores para el tema oscuro y claro de la aplicación
+
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFF424242),
     onPrimary = Color.White,
@@ -38,10 +40,19 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = Color.White
 )
 
+
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF66BB6A), onPrimary = Color.Black, secondary = Color(0xFF66BB6A),
-    onSecondary = Color.White, surface = Color.White, onSurface = Color.Black, background = Color(0xFFF2F2F2)
+    primary = Color(0xFF66BB6A), 
+    onPrimary = Color.Black, 
+    secondary = Color(0xFF66BB6A),
+    onSecondary = Color.White, 
+    surface = Color.White, 
+    onSurface = Color.Black, 
+    background = Color(0xFFF2F2F2)
 )
+
+// Esta es la actividad principal y punto de entrada de la aplicación.
+ 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +61,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ Esta es la funcion que configura el entorno de la aplicación.
+ Ademas de:
+ Observar y aplicar el tema (claro/oscuro)
+ Inicializar la instancia de la base de datos
+ Configurar la tipografía personalizada
+ Crear el controlador de navegación y el grafo de navegación
+ */
 @Composable
 fun AppNavigation() {
     val context = LocalContext.current
@@ -67,19 +86,25 @@ fun AppNavigation() {
     }
 }
 
+// Aquí se registran todas las pantallas (Composables) y se asocian a una ruta única.
+
 @Composable
 fun AppNavGraph(navController: NavHostController, database: TaskDatabase) {
     NavHost(
         navController,
         startDestination = "home"
     ) {
+        // Pantalla principal
         composable("home") { Home(navController, database.taskDao()) }
+        // Pantalla para añadir una nueva tarea
         composable("addTask") {
             AddTaskScreen(navController = navController, taskDao = database.taskDao())
         }
+        // Pantalla "Acerca de"
         composable("about") {
             AboutScreen(navController = navController)
         }
+        // Pantalla de detalle de tarea
         composable(
             "taskDetail/{taskId}",
             arguments = listOf(navArgument("taskId") { type = NavType.IntType })
@@ -89,12 +114,17 @@ fun AppNavGraph(navController: NavHostController, database: TaskDatabase) {
                 TaskDetailScreen(navController = navController, taskId = taskId, taskDao = database.taskDao())
             }
         }
+        // Pantalla de búsqueda
         composable("search") {
             SearchScreen(navController = navController, taskDao = database.taskDao())
         }
     }
 }
 
+/**
+ Una pantalla genérica de marcador de posición.
+ Útil para el desarrollo o para características no implementadas.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaceholderScreen(title: String, navController: NavHostController) {
