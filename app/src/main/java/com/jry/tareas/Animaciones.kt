@@ -15,6 +15,11 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import kotlinx.coroutines.delay
 
+/**
+ Este es un Composable que muestra una animación Lottie desde un archivo de assets
+ La animación se reproduce una vez, espera 3 segundos y luego se reinicia
+ */
+
 @Composable
 fun LottieAnimacion(
     modifier: Modifier = Modifier,
@@ -26,9 +31,9 @@ fun LottieAnimacion(
     val progress by animateLottieCompositionAsState(
         composition = composition,
         isPlaying = isPlaying,
+        // Reinicia la animación desde el principio cada vez que isPlaying se vuelve true
         restartOnPlay = true
     )
-
     LaunchedEffect(progress) {
         if (progress == 1f) {
             isPlaying = false

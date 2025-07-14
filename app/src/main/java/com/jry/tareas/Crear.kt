@@ -11,16 +11,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
+/**
+ Este archivo nos muestra la pantalla para crear una nueva tarea.
+ Permite al usuario introducir un título y una descripción para una nueva tarea
+ y guardarla en la base de datos
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
-    var title by remember { mutableStateOf(TextFieldValue()) }
-    var description by remember { mutableStateOf(TextFieldValue()) }
+    // Estados para almacenar el título y la descripción de la tarea.
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    // Estado para mostrar un error si el título está vacío al intentar guardar
     var showError by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -36,13 +43,14 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
                 actions = {
                     Button(
                         onClick = {
-                            if (title.text.isBlank()) {
+                            // Esto valida que el título no esté vacío
+                            if (title.isBlank()) {
                                 showError = true
                             } else {
                                 scope.launch {
                                     val task = Task(
-                                        title = title.text,
-                                        description = description.text
+                                        title = title,
+                                        description = description
                                     )
                                     taskDao.insert(task)
                                     navController.popBackStack()
@@ -70,6 +78,7 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
             )
         },
         floatingActionButton = {
+            // Botón flotante para cancelar y volver al inicio
             FloatingActionButton(
                 onClick = { navController.popBackStack() },
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -86,12 +95,12 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Campo de título
+            // Campo de texto para el título
             OutlinedTextField(
                 value = title,
                 onValueChange = {
                     title = it
-                    showError = false
+                    showError = false // Ocultar el error al empezar a escribir
                 },
                 label = { Text("Título", style = MaterialTheme.typography.bodyLarge) },
                 placeholder = { Text("Escribe el título de tu tarea...", style = MaterialTheme.typography.bodyLarge) },
@@ -112,7 +121,7 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
                 )
             )
 
-            // Campo de descripción
+            // Campo de texto para la descripción
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },

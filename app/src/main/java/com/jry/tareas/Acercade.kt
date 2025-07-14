@@ -15,6 +15,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 
+/**
+ URL constante para el perfil de GitHub
+ Se define fuera del Composable para evitar su recreación en cada recomposición
+ */
+private const val GITHUB_URL = "https://github.com/InkSh4dow"
+
+/**
+ Esta es la pantalla "Acerca de" de la aplicación.
+ Esta pantalla proporciona información sobre la app, como su versión y propósito,
+ y un botón para ver el código fuente en GitHub
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(navController: NavController) {
@@ -44,24 +56,24 @@ fun AboutScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                "App de Notas - Versión 1.0.0",
+                text = "App de Notas - Versión 1.0.0",
                 style = MaterialTheme.typography.headlineSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Una app sencilla y rápida para crear, editar y organizar tus notas",
+                text = "Una app sencilla y rápida para crear, editar y organizar tus notas",
                 style = MaterialTheme.typography.bodyLarge
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Tus datos se guardan localmente en tu dispositivo. No se recopila información",
+                text = "Tus datos se guardan localmente en tu dispositivo. No se recopila información",
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = {
-                    val url = "https://github.com/InkSh4dow"
-                    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                    // Crea un Intent para abrir la URL de GitHub en un navegador.
+                    val intent = Intent(Intent.ACTION_VIEW, GITHUB_URL.toUri())
                     context.startActivity(intent)
                 },
                 shape = RoundedCornerShape(24.dp),

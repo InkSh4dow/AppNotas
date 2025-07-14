@@ -20,13 +20,29 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 
+//Este archivo nos Muestra una pantalla de búsqueda para filtrar tareas por título o descripción
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(navController: NavController, taskDao: TaskDao) {
+    // Estado para almacenar el texto de búsqueda
+    // incluso si la app se reinicia o se rota
     var q by rememberSaveable { mutableStateOf("") }
+
+    // Recolecta la lista de todas las tareas desde la base de datos
     val tasks by taskDao.getAllTasks().collectAsStateWithLifecycle(emptyList())
-    val filtered = if (q.isBlank()) emptyList() else tasks.filter {
-        it.title.contains(q, true) || it.description.contains(q, true)
+
+    // Filtra las tareas basándose en la consulta 'q'.
+    // `remember` optimiza el rendimiento al evitar recalcular la lista en cada recomposición,
+    // a menos que 'q' o la lista de 'tasks' cambien.
+    val filteredTasks = remember(q, tasks) {
+        if (q.isBlank()) {
+            emptyList()
+        } else {
+            tasks.filter {
+                it.title.contains(q, ignoreCase = true) || it.description.contains(q, ignoreCase = true)
+            }
+        }
     }
 
     Scaffold(
@@ -37,6 +53,7 @@ fun SearchScreen(navController: NavController, taskDao: TaskDao) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // Barra de búsqueda superior
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -55,6 +72,7 @@ fun SearchScreen(navController: NavController, taskDao: TaskDao) {
                     placeholder = { Text("Buscar nota...", style = MaterialTheme.typography.bodyLarge) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
                     trailingIcon = {
+                        // Muestra un botón para limpiar la búsqueda si hay texto
                         if (q.isNotEmpty()) {
                             IconButton(onClick = { q = "" }) {
                                 Icon(Icons.Default.Clear, contentDescription = "Limpiar")
@@ -69,11 +87,13 @@ fun SearchScreen(navController: NavController, taskDao: TaskDao) {
                         disabledContainerColor = MaterialTheme.colorScheme.surface,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent
-                    ))
+                    )
+                )
             }
 
+            // Contenido principal y nos muestra los resultados o un mensaje
             Column(modifier = Modifier.weight(1f)) {
-                if (q.isNotBlank() && filtered.isEmpty()) {
+                if (q.isNotBlank() && filteredTasks.isEmpty()) {
                     Box(
                         Modifier
                             .fillMaxSize()
@@ -83,13 +103,13 @@ fun SearchScreen(navController: NavController, taskDao: TaskDao) {
                         Text("Sin resultados para '$q'", style = MaterialTheme.typography.bodyLarge)
                     }
                 } else if (q.isNotBlank()) {
+                    // Muestra la lista de resultados
                     LazyColumn(
-                        Modifier
-                            .fillMaxSize(),
+                        Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(filtered, key = { it.id }) { task ->
+                        items(filteredTasks, key = { it.id }) { task ->
                             Card(
                                 Modifier
                                     .fillMaxWidth()
