@@ -1,4 +1,4 @@
-package com.jry.tareas
+package com.jry.notas
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

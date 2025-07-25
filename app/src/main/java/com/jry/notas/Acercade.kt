@@ -1,4 +1,4 @@
-package com.jry.tareas
+package com.jry.notas
 
 import android.content.Intent
 import androidx.compose.foundation.layout.*

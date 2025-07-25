@@ -13,10 +13,10 @@
         android:theme="@style/Theme.Tareas"
         >
         <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Tareas">
-            <intent-filter>
+        android:name="com.jry.notas.MainActivity"
+        android:exported="true"
+        android:theme="@style/Theme.Tareas">
+        <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />

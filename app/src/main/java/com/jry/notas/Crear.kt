@@ -1,4 +1,4 @@
-package com.jry.tareas
+package com.jry.notas
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
@@ -108,8 +107,7 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
                     Icon(Icons.Default.Create, contentDescription = "Título")
                 },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp)),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 isError = showError,
                 supportingText = if (showError) {
@@ -132,8 +130,7 @@ fun AddTaskScreen(navController: NavController, taskDao: TaskDao) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp)),
+                    .height(120.dp),
                 shape = RoundedCornerShape(16.dp),
                 maxLines = 5,
                 colors = OutlinedTextFieldDefaults.colors(

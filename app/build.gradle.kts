@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.jry.tareas"
+    namespace = "com.jry.notas"
     compileSdk = 35
 
     defaultConfig {

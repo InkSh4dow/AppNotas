@@ -1,4 +1,4 @@
-package com.jry.tareas
+package com.jry.notas
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +45,9 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
     var showError by remember { mutableStateOf(false) }
     // Estado para controlar la visibilidad del diálogo de eliminación
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Estado para mostrar el diálogo de selección de color
+    var showColorDialog by remember { mutableStateOf(false) }
 
     // Fondo de la nota
     val taskBackgroundColor = remember(task?.colorHex) {
@@ -82,6 +84,76 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    // Diálogo para seleccionar el color de la nota
+    if (showColorDialog) {
+        AlertDialog(
+            onDismissRequest = { showColorDialog = false },
+            title = { Text("Selecciona un color") },
+            text = {
+                // Más colores variados
+                val colorOptions = listOf(
+                    "#FFEB3B", // Amarillo
+                    "#FFCDD2", // Rojo claro
+                    "#C8E6C9", // Verde claro
+                    "#BBDEFB", // Azul claro
+                    "#FFF9C4", // Amarillo pálido
+                    "#D1C4E9", // Morado claro
+                    "#FFFFFF", // Blanco
+                    "#F44336", // Rojo intenso
+                    "#4CAF50", // Verde intenso
+                    "#2196F3", // Azul intenso
+                    "#9C27B0", // Morado intenso
+                    "#FF9800", // Naranja
+                    "#795548", // Marrón
+                    "#607D8B", // Azul grisáceo
+                    "#00BCD4", // Cyan
+                    "#E91E63", // Rosa
+                    "#8BC34A", // Verde lima
+                    "#FFC107", // Amarillo oscuro
+                    "#3F51B5", // Azul oscuro
+                    "#B2FF59", // Verde neón
+                    "#FFB300", // Naranja oscuro
+                    "#F8BBD0", // Rosa claro
+                    "#BDBDBD"  // Gris
+                )
+                Column {
+                    for (rowColors in colorOptions.chunked(7)) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            rowColors.forEach { hex ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(18.dp))
+                                        .background(Color(android.graphics.Color.parseColor(hex)))
+                                        .clickable {
+                                            showColorDialog = false
+                                            scope.launch {
+                                                task?.let {
+                                                    val updatedTask = it.copy(colorHex = hex)
+                                                    taskDao.updateTask(updatedTask)
+                                                }
+                                            }
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showColorDialog = false }) {
                     Text("Cancelar")
                 }
             }
@@ -224,7 +296,6 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(0.75f)
-                        .shadow(8.dp, RoundedCornerShape(16.dp))
                         .clip(RoundedCornerShape(16.dp))
                         .background(bottomBarBackgroundColor)
                         .padding(horizontal = 8.dp, vertical = 8.dp),
@@ -263,7 +334,7 @@ fun TaskDetailScreen(navController: NavController, taskId: Int, taskDao: TaskDao
                     ActionButton(
                         icon = Icons.Default.Circle,
                         text = "Color",
-                        onClick = { /**/ },
+                        onClick = { showColorDialog = true },
                         iconTint = taskBackgroundColor ?: bottomBarContentColor
                     )
 

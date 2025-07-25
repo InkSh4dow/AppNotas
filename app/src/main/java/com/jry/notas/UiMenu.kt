@@ -1,4 +1,4 @@
-package com.jry.tareas
+package com.jry.notas
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*

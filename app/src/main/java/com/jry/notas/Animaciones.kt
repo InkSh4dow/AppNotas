@@ -1,4 +1,4 @@
-package com.jry.tareas
+package com.jry.notas
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable

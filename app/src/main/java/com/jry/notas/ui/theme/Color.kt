@@ -1,4 +1,4 @@
-package com.jry.tareas.ui.theme
+package com.jry.notas.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
