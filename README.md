@@ -1,17 +1,14 @@
-Tareas & Notas 
+Notas 
 
 Una aplicación moderna y funcional 
 
 Funcionalidades (En Desarrollo)
 
-- Añadir, editar y eliminar tareas o notas.
+- Añadir, editar y eliminar notas.
 - Modo claro y oscuro.
-- Marcar tareas como completadas.
-- Organización por categorías o etiquetas.
-- Búsqueda de notas/tareas.
-- Soporte para fechas o recordatorios (opcional).
+- Búsqueda de notas.
 - Interfaz minimalista pero funcional y fácil de usar.
-- Diseño responsive para vertical y horizontal.
+- Diseño responsive para vertical.
 
 Tecnologías (En Desarrollo)
 
