@@ -2,7 +2,7 @@ Notas
 
 Una aplicación moderna y funcional 
 
-Funcionalidades (En Desarrollo)
+Funcionalidades
 
 - Añadir, editar y eliminar notas.
 - Modo claro y oscuro.
@@ -10,7 +10,7 @@ Funcionalidades (En Desarrollo)
 - Interfaz minimalista pero funcional y fácil de usar.
 - Diseño responsive para vertical.
 
-Tecnologías (En Desarrollo)
+Tecnologías 
 
 - Kotlin
 - Jetpack Compose (Material 3)
