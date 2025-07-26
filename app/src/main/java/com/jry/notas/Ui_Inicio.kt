@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -37,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,10 +53,8 @@ fun UiInicio() {
     val taskDao = remember { TaskDatabase.getDatabase(contexto).taskDao() }
     var textoBusqueda by rememberSaveable { mutableStateOf("") }
 
-    // Observa todas las tareas de la base de datos
     val listaNotas by taskDao.getAllTasks().collectAsState(initial = emptyList())
 
-    // Filtra las notas por búsqueda, asegurando que los campos no sean nulos
     val notasFiltradas = listaNotas.filter { nota ->
         nota.titulo.contains(textoBusqueda, ignoreCase = true) ||
         nota.contenido.contains(textoBusqueda, ignoreCase = true)
@@ -67,13 +66,24 @@ fun UiInicio() {
             FloatingActionButton(
                 onClick = { /* Acción FAB */ },
                 shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.secondary
             ) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Agregar Nota",
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Agregar Nota",
+                        tint = MaterialTheme.colorScheme.onSecondary
+                    )
+                    Text(
+                        text = "NUEVO",
+                        color = MaterialTheme.colorScheme.onSecondary,
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -81,32 +91,34 @@ fun UiInicio() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(16.dp)
         ) {
             // Encabezado
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .height(56.dp)
+                    .padding(horizontal = 0.dp, vertical = 0.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Imagen de perfil con fondo rosa
+                // Imagen de perfil con fondo secundario y icono secundario
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(44.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE573A7)), // Rosa
+                        .background(MaterialTheme.colorScheme.secondary), 
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.AccountCircle,
                         contentDescription = "Perfil",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(28.dp)
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(32.dp)
                     )
                 }
                 Text(
-                    text = "Notes",
+                    text = "Notas",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f).padding(start = 16.dp),
                     color = MaterialTheme.colorScheme.onBackground,
@@ -117,36 +129,53 @@ fun UiInicio() {
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "Configuración",
-                        tint = MaterialTheme.colorScheme.onBackground
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Buscador
-            OutlinedTextField(
-                value = textoBusqueda,
-                onValueChange = { textoBusqueda = it },
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Buscar notas", style = MaterialTheme.typography.bodyLarge) },
-                leadingIcon = {
-                    Icon(
-                        Icons.Default.Search,
-                        contentDescription = "Buscar",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                },
-                shape = RoundedCornerShape(32.dp),
-                singleLine = true,
-                textStyle = MaterialTheme.typography.bodyLarge
-            )
+                    .height(56.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                OutlinedTextField(
+                    value = textoBusqueda,
+                    onValueChange = { textoBusqueda = it },
+                    modifier = Modifier
+                        .height(56.dp)
+                        .fillMaxWidth(),
+                    placeholder = {
+                        Text(
+                            "Buscar notas",
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp)
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Search,
+                            contentDescription = "Buscar",
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    },
+                    shape = RoundedCornerShape(32.dp),
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp)
+                )
+            }
 
-            // Sección "Notes"
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Sección "Notas"
             Text(
-                text = "Notes",
+                text = "Notas",
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp, fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+                modifier = Modifier.padding(start = 0.dp, top = 0.dp, bottom = 8.dp),
                 color = MaterialTheme.colorScheme.onBackground
             )
             if (notasFiltradas.isEmpty()) {
@@ -166,14 +195,13 @@ fun UiInicio() {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
                         .heightIn(max = 180.dp)
                 ) {
                     items(notasFiltradas) { nota ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 6.dp, horizontal = 8.dp),
+                                .padding(vertical = 12.dp, horizontal = 0.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
