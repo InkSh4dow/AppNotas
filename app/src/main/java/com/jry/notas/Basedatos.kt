@@ -1,7 +1,16 @@
 package com.jry.notas
 
 import android.content.Context
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Delete
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.Update
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +57,7 @@ interface TaskDao {
  */
 @Database(
     entities = [Task::class],
-    version = 2,
+    version = 2, // Regresa la versión anterior
     exportSchema = false
 )
 abstract class TaskDatabase : RoomDatabase() {
@@ -86,3 +95,16 @@ abstract class TaskDatabase : RoomDatabase() {
             }
     }
 }
+
+/**
+ Esta clase representa la entidad 'tasks' en la base de datos.
+ Cada instancia de esta clase corresponde a una fila en la tabla 'tasks'.
+ */
+@Entity(tableName = "tasks")
+data class Task(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val titulo: String,
+    val contenido: String,
+    val fecha: String? = null,
+    val colorHex: String? = null
+)
