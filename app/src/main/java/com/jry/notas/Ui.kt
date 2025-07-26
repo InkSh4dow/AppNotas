@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
+import androidx.core.graphics.toColorInt
 
 //Funcion para ordenar las notas
 
@@ -31,7 +32,7 @@ enum class SortOrder {
 
 /**
 Composable que representa la pantalla principal de la aplicación
-Muestra una lista de notas o tareas en una cuadrícula. Permite al usuario
+Muestra una lista de notas en una cuadrícula. Permite al usuario
 añadir nuevas notas, buscarlas, ordenarlas y acceder al menú de la aplicación
 */
 
@@ -141,7 +142,7 @@ fun Home(navController: NavController, taskDao: TaskDao) {
                     LottieAnimacion(assetName = "vacio.lottie", size = 250.dp)
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        "Aún no hay tareas",
+                        "Aún no hay Notas",
                         style = MaterialTheme.typography.titleLarge
                     )
                     Text(
@@ -164,7 +165,7 @@ fun Home(navController: NavController, taskDao: TaskDao) {
                     val cardColor = remember(tarea.colorHex) {
                         if (tarea.colorHex != null) {
                             try {
-                                Color(android.graphics.Color.parseColor(tarea.colorHex))
+                                Color(tarea.colorHex.toColorInt())
                             } catch (e: Exception) {
                                 null // Devolver null para usar el color por defecto
                             }
